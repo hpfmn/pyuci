@@ -1,10 +1,12 @@
 from pyuci import Uci
+import os.path
 import unittest
 
 
 class TestSetup(unittest.TestCase):
     def setUp(self):
-        self.confstring = open('example_config').read()
+        path,filename = os.path.split(os.path.realpath(__file__))
+        self.confstring = open(os.path.join(path,'example_config')).read()
         self.confa = Uci()
         self.confb = Uci()
         self.confa.load_tree(self.confstring)
