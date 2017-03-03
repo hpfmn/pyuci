@@ -99,6 +99,21 @@ class Package(dict):
 
     def add_config(self, config):
         self[config.name] = config
+    def add_config_json(self, config):
+        anon = config.pop(".anonymous")
+        cur_config = Config(config.pop('.type'), config.pop('.name'),anon=='true')
+        self.add_config(cur_config)
+        # TODO: find out if the following is still necessary
+        for key in config.keys():
+            if isinstance(config[key],str):
+                try:
+                    config[key] = config[key].replace("'",'"')
+                    newval = json.loads(config[key])
+                except ValueError:
+                    newval = config[key]
+                config[key] = newval
+            cur_config.set_option(key,config[key])
+        return cur_config
 
 class Uci(object):
     logger = logging.getLogger('uci')
@@ -189,22 +204,7 @@ class Uci(object):
             cur_package = self.add_package(package)
             for config in export_tree[package]['values']:
                 config = export_tree[package]['values'][config]
-                anon = config.pop(".anonymous")
-                cur_config = Config(config.pop('.type'), config.pop('.name'),anon=='true')
-                cur_package.add_config(cur_config)
-                for key in config.keys():
-                    if isinstance(config[key],str):
-                        try:
-                            config[key] = config[key].replace("'",'"')
-                            newval = json.loads(config[key])
-                        except ValueError:
-                            newval = config[key]
-                        config[key] = newval
-                    cur_config.set_option(key,config[key])
-                       # if isinstance(config[key], list):
-                       #     cur_config.add_list(key,config[key])
-                       # else:
-                       #     cur_config.set_option(key,config[key])
+                cur_package.add_config_json(config)
     def export_json(self):
         export={}
         for packagename, package in self.packages.items():
