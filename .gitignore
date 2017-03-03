@@ -1,3 +1,4 @@
 build/
 dist/
 pyuci.egg-info/
+__pycache__/
